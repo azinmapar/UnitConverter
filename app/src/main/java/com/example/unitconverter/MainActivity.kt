@@ -22,11 +22,21 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.unitconverter.ui.theme.UnitConverterTheme
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,58 +55,112 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
 @Composable
 fun UnitConverter() {
+    var fromMenuState by remember { mutableStateOf(false) }
+    var toMenuState by remember { mutableStateOf(false) }
+    var fromUnit by remember { mutableStateOf("m") }
+    var fromValue by remember { mutableStateOf("") }
+    var toUnit by remember { mutableStateOf("m") }
+    var toValue by remember { mutableStateOf("") }
+    val fromConversionFactor = remember {
+        mutableDoubleStateOf(1.0)
+    }
+    val toConversionFactor = remember {
+        mutableDoubleStateOf(1.0)
+    }
+
+    val customTextStyle = TextStyle(
+        fontFamily = FontFamily.Monospace,
+        color = Color.Red,
+        fontSize = 32.sp,
+    )
+
+    fun convert() {
+        // * ?: -> if it is null
+        val inputAsDouble = fromValue.toDoubleOrNull() ?: 0.0
+        val result = (inputAsDouble * fromConversionFactor.doubleValue * 100.0 /
+                toConversionFactor.doubleValue).roundToInt() / 100.0
+        toValue = result.toString()
+    }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     )
     {
-        Text(text = "Unit Converter")
+        Text(text = "Unit Converter",
+            style = customTextStyle,)
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
-            value = "",
+            value = fromValue,
             onValueChange = {
-
+                fromValue = it
+                convert()
             },
+            label = { Text(text = "Enter Value") }
         )
+        Spacer(modifier = Modifier.height(16.dp))
         Row {
             Box {
                 Button(
                     onClick = {
-                        /*TODO*/
+                        fromMenuState = !fromMenuState
                     },
                 ) {
-                    Text(text = "Select")
+                    Text(text = fromUnit)
                     Icon(
                         Icons.Default.ArrowDropDown, contentDescription = "DropDown Arrow",
                     )
                 }
-                DropdownMenu(expanded = true, onDismissRequest = { /*TODO*/ }) {
+                DropdownMenu(
+                    expanded = fromMenuState,
+                    onDismissRequest = { fromMenuState = false }) {
                     DropdownMenuItem(
                         text = {
                             Text(text = "Centimeters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            fromUnit = "cm"
+                            fromMenuState = false
+                            fromConversionFactor.doubleValue = 0.01
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Meters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            fromUnit = "m"
+                            fromMenuState = false
+                            fromConversionFactor.doubleValue = 1.0
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Millimeters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            fromUnit = "mm"
+                            fromMenuState = false
+                            fromConversionFactor.doubleValue = 0.001
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Feet")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            fromUnit = "f"
+                            fromMenuState = false
+                            fromConversionFactor.doubleValue = 0.3048
+                            convert()
+                        },
                     )
                 }
             }
@@ -104,45 +168,66 @@ fun UnitConverter() {
             Box {
                 Button(
                     onClick = {
-                        /*TODO*/
+                        toMenuState = !toMenuState
                     },
                 ) {
-                    Text(text = "Select")
+                    Text(text = toUnit)
                     Icon(
                         Icons.Default.ArrowDropDown, contentDescription = "DropDown Arrow",
                     )
                 }
-                DropdownMenu(expanded = true, onDismissRequest = { /*TODO*/ }) {
+                DropdownMenu(expanded = toMenuState, onDismissRequest = { toMenuState = false }) {
                     DropdownMenuItem(
                         text = {
                             Text(text = "Centimeters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            toUnit = "cm"
+                            toMenuState = false
+                            toConversionFactor.doubleValue = 0.01
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Meters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            toUnit = "m"
+                            toMenuState = false
+                            toConversionFactor.doubleValue = 1.0
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Millimeters")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            toUnit = "mm"
+                            toMenuState = false
+                            toConversionFactor.doubleValue = 0.001
+                            convert()
+                        },
                     )
                     DropdownMenuItem(
                         text = {
                             Text(text = "Feet")
                         },
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            toUnit = "f"
+                            toMenuState = false
+                            toConversionFactor.doubleValue = 0.3048
+                            convert()
+                        },
                     )
                 }
 
             } // * Works as a placeholder and its children are stack on top of each other
 
         }
-        Text(text = "Result:")
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Result: ${toValue + toUnit}", style = MaterialTheme.typography.headlineMedium)
     }
 }
 
